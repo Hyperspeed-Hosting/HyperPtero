@@ -3,9 +3,13 @@ import discord
 from discord.ext import commands
 from pytubefix import YouTube
 
-#CONFIG
-BOT_TOKEN = "GOES HERE"
+from pteroadmin import PteroClient
+from secret import BOT_TOKEN
+from sql import Database
 
+#CONFIG
+
+database = Database()
 bot = discord.Bot()
 
 @bot.event
@@ -14,6 +18,31 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for /website"))
     await bot.sync_commands()
 
+#Pterodactyl
+
+@bot.slash_command(
+    name="link",
+    description="Link your account to Pterodactyl"
+)
+async def link(ctx, email: str, api_key: str, force_relink: bool = False):
+    #TODO!
+    # Check if user already in database
+    # Then Check if their API works
+
+    if not force_relink and database.find_user_by_email(email):
+        await ctx.respond("You are already linked according to the database; if you like to force link then put 'True' on Force Link Paramenter")
+    else:
+        user = PteroClient(api_key=api_key, email=email)
+        User = user.checkAPI(discord_id=ctx.author.id)
+        if User == None:
+            await ctx.respond("The API key provided did not work.")
+        else:
+            database.add_user(User)
+            await ctx.respond("Added to database!")
+
+        
+
+# Misc.
 @bot.slash_command(
     name="website",
     description="Shares information regarding website"
@@ -50,6 +79,16 @@ async def download(ctx, url: str):
         os.remove("video.mp4")
     except: 
         ctx.respond("Error in downloading video...")
+
+
+    
+
+#TODO!
+# Pterodactyl
+# ❌ Link Function (in progress)
+#   ❌ Database System
+#   ❌ User Classes
+# ❌ Server Navbar
 
 # Run the bot with your token
 bot.run(BOT_TOKEN)
