@@ -57,6 +57,22 @@ class Database:
             )
         else:
             return None
+        
+    def find_user_by_discord_id(self, discordID: int) -> User:
+        query = "SELECT id, discord_id, pterodactyl_id, pterodactyl_api_key, email FROM users WHERE discord_id = ?"
+        self.cursor.execute(query, (discordID,))
+        result = self.cursor.fetchone()
+
+        if result:
+            return User(
+                user_id=result[0],
+                discord_id=result[1],
+                pterodactyl_id=result[2],
+                pterodactyl_api_key=result[3],
+                email=result[4]
+            )
+        else:
+            return None
     
     def add_user(self, user: User) -> None:
         query = '''INSERT INTO users (discord_id, pterodactyl_id, pterodactyl_api_key, email)

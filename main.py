@@ -31,9 +31,12 @@ async def link(ctx, email: str, api_key: str, force_relink: bool = False):
 
     if not force_relink and database.find_user_by_email(email):
         await ctx.respond("You are already linked according to the database; if you like to force link then put 'True' on Force Link Paramenter")
+    elif database.find_user_by_discord_id(ctx.author.id):
+        await ctx.respond("Somebody with a different discord id has already linked")
     else:
         user = PteroClient(api_key=api_key, email=email)
         User = user.checkAPI(discord_id=ctx.author.id)
+
         if User == None:
             await ctx.respond("The API key provided did not work.")
         else:
